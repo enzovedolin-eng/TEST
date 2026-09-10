@@ -1,0 +1,12 @@
+{
+  "name": "api-produtos",
+  "version": "1.0.0",
+  "description": "Mini API REST de produtos - aula de HTTP (metodos e status codes)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Testador da API de Produtos</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, Arial, sans-serif; margin: 0; background: #f4f6fb; color: #1f2430; }
+    header { background: #20344f; color: #fff; padding: 18px 20px; }
+    header h1 { margin: 0; font-size: 19px; }
+    header p { margin: 4px 0 0; font-size: 13px; opacity: .8; }
+    main { max-width: 820px; margin: 20px auto; padding: 0 16px; }
+    .card { background: #fff; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    h2 { font-size: 15px; margin: 0 0 10px; color: #20344f; }
+    button { background: #2d6cdf; color: #fff; border: 0; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; margin: 3px 4px 3px 0; }
+    button.danger { background: #c0392b; }
+    button.warn { background: #d08a00; }
+    input { padding: 7px 9px; border: 1px solid #c7cdd8; border-radius: 6px; font-size: 13px; margin: 3px 4px 3px 0; }
+    pre { background: #0f1b2d; color: #e7edf6; padding: 12px; border-radius: 8px; overflow:auto; font-size: 12.5px; min-height: 40px; }
+    .status { display:inline-block; font-weight:700; padding:2px 10px; border-radius:20px; font-size:12px; color:#fff; }
+    .s2 { background:#1e8e4e; } .s4 { background:#c0392b; } .s5 { background:#6b2fb3; } .s3{ background:#d08a00; }
+    small { color:#6a7486; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Testador da API de Produtos</h1>
+    <p>Backend 2DAT2 &middot; observe o <strong>status code</strong> de cada resposta</p>
+  </header>
+  <main>
+    <div class="card">
+      <h2>GET &mdash; listar / buscar</h2>
+      <button onclick="listar()">GET /produtos</button>
+      <input id="getId" placeholder="id" size="4" value="1" />
+      <button onclick="buscar()">GET /produtos/:id</button>
+      <small>Tente um id que não existe (ex: 99) e veja o 404.</small>
+    </div>
+
+    <div class="card">
+      <h2>POST &mdash; criar</h2>
+      <input id="nome" placeholder="nome" />
+      <input id="preco" placeholder="preco" size="6" />
+      <button onclick="criar()">POST /produtos</button>
+      <small>Deixe um campo vazio para testar a validação (400).</small>
+    </div>
+
+    <div class="card">
+      <h2>PUT / DELETE &mdash; atualizar / apagar</h2>
+      <input id="putId" placeholder="id" size="4" value="1" />
+      <input id="putNome" placeholder="novo nome" />
+      <button class="warn" onclick="atualizar()">PUT /produtos/:id</button>
+      <input id="delId" placeholder="id" size="4" value="2" />
+      <button class="danger" onclick="apagar()">DELETE /produtos/:id</button>
+    </div>
+
+    <div class="card">
+      <h2>Resposta</h2>
+      <p>Status: <span id="status" class="status">--</span></p>
+      <pre id="saida">Clique em um botão acima...</pre>
+    </div>
+  </main>
+
+  <script>
+    const saida = document.getElementById("saida");
+    const elStatus = document.getElementById("status");
+
+    function mostrar(status, corpo) {
+      elStatus.textContent = status;
+      elStatus.className = "status s" + String(status)[0];
+      saida.textContent = corpo;
+    }
+
+    async function chamar(url, opcoes) {
+      try {
+        const r = await fetch(url, opcoes);
+        let corpo = "(sem corpo)";
+        const txt = await r.text();
+        if (txt) { try { corpo = JSON.stringify(JSON.parse(txt), null, 2); } catch { corpo = txt; } }
+        mostrar(r.status, corpo);
+      } catch (e) {
+        mostrar("ERRO", "Servidor no ar? " + e.message);
+      }
+    }
+
+    const listar  = () => chamar("/produtos");
+    const buscar  = () => chamar("/produtos/" + document.getElementById("getId").value);
+    const criar   = () => chamar("/produtos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nome: document.getElementById("nome").value || undefined,
+        preco: document.getElementById("preco").value ? Number(document.getElementById("preco").value) : undefined
+      })
+    });
+    const atualizar = () => chamar("/produtos/" + document.getElementById("putId").value, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome: document.getElementById("putNome").value || undefined })
+    });
+    const apagar = () => chamar("/produtos/" + document.getElementById("delId").value, { method: "DELETE" });
+  </script>
+</body>
+</html>
